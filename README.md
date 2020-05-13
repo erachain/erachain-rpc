@@ -43,7 +43,7 @@ http://89.235.184.251:9068/telegrams/address/79MXsjo9DEaxzu6kSvJUauLhmQrB4WogsH/
 | Наименование поля | Формат | Описание | Пример |
 | ------ | ------ | ------ | ------ | ------ |
 | cell | cell | cell | cell | cell |
-| cell | cell |  cell | cell | cell |
+| cell | cell | cell | cell | cell |  
 
 Таблица 1. Представление полей транзакции  
 | Наименование поля | Формат | Описание	| Пример |
