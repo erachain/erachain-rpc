@@ -45,7 +45,15 @@ http://89.235.184.251:9068/telegrams/address/79MXsjo9DEaxzu6kSvJUauLhmQrB4WogsH/
 | cell | cell | cell | cell | cell |
 | cell | cell | cell | cell | cell |  
 
+
+Наименование поля | Формат | Описание | Пример
+------ | ------ | ------ | -------- | ------
+cell | cell | cell | cell | cell
+cell | cell | cell | cell | cell 
+
+
 Таблица 1. Представление полей транзакции  
+
 | Наименование поля | Формат | Описание	| Пример |
 | ----------------- | ------ | -------- | ------ |
 | timestamp	| number | Дата создания сообщения в ms(Unix epoch time) соответствует времени GMT: Friday, 27 July 2018 г., 13:15:41.321 title (optional) | 1532697187321 |  
