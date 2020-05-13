@@ -12,7 +12,7 @@ http://89.235.184.251:9068/addresses?password=123456789
 
 3. Для работы методов отправки телеграмм и транзакций необходимо использовать пароль более 8-ми символов:
 
-curl -d "123456789" -X POST http://127.0.0.1:9068/wallet/unlock
+> curl -d "123456789" -X POST http://127.0.0.1:9068/wallet/unlock
 
 4. Для обозначения передаваемые параметров используются фигурные скобки, например следующий синтаксис
 parameter={parameterValue}
@@ -24,32 +24,48 @@ parameter=643
 Команда RPC
 telegrams/address/{address}/timestamp/{timestamp}?filter={filter}&decrypt={true/false}&password=123456789 
 
-Примеры
-Поиск телеграммы с даты 0 и по фильтру идентификатора пользователя 9090001011:
-http://89.235.184.251:9068/telegrams/timestamp/0?filter=9090001011
+#### Примеры
+Поиск телеграммы с даты 0 и по фильтру идентификатора пользователя 9090001011:  
+http://89.235.184.251:9068/telegrams/timestamp/0?filter=9090001011  
 
-Поиск телеграммы по адресу получателя 7Dpv5... и фильтру идентификатора пользователя 9090001011:
+Поиск телеграммы по адресу получателя 7Dpv5... и фильтру идентификатора пользователя 9090001011:  
 http://89.235.184.251:9068/telegrams/address/7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob?filter=9090001011
 
-Поиск телеграммы по сигнатуре 5CmLD...http://89.235.184.251:9068/telegrams/get/5CmLDgMuk8MLU2nf2BYxu93bBFmxzE5cFrqqe1avw5m8WdYbPjVAv1HRR5HziZVdpSGCNUhnLaUARe2Qoiixc4XB
+Поиск телеграммы по сигнатуре 5CmLD...  
+http://89.235.184.251:9068/telegrams/get/5CmLDgMuk8MLU2nf2BYxu93bBFmxzE5cFrqqe1avw5m8WdYbPjVAv1HRR5HziZVdpSGCNUhnLaUARe2Qoiixc4XB
 
-Поиск телеграммы по адресу 79MXsj... с даты 0 по фильтру идентификатора пользователя 909000111:
+Поиск телеграммы по адресу 79MXsj... с даты 0 по фильтру идентификатора пользователя 909000111:  
 http://89.235.184.251:9068/telegrams/address/79MXsjo9DEaxzu6kSvJUauLhmQrB4WogsH/timestamp/0?filter=9090001011
 
-Формат Ответа
-Ответ выдается в виде списка объектов JSON, где каждый элемент списка есть JSON объект c единственным полем transaction и соответствующим ему вложенным объектом JSON имеющим следующим набор полей:
+Формат Ответа  
+Ответ выдается в виде списка объектов JSON, где каждый элемент списка есть JSON объект c единственным полем transaction и соответствующим ему вложенным объектом JSON имеющим следующим набор полей:  
+
 Таблица 1. Представление полей транзакции
-Наименование поля	Формат	Описание	Пример
-timestamp	number	Дата создания сообщения в ms(Unix epoch time)	1532697187321
-соответствует времени
-GMT: Friday, 27 July 2018 г., 13:15:41.321
-title (optional)	string, UTF8	Заголовок сообщения	 
-creator	string, Base58	Счет создателя сообщения	 
-publickey	string, Base58	Публичный ключ создателя сообщения	 
-signature	string, Base58	Цифровая подпись сообщения - далее уникальный идентификатор заказа	 
-message (optional)	string, UTF8	Содержит данные об заказе	  
-isText	boolean	true - сообщение в текстовом формате	
-encrypted	boolean	true - сообщение зашифровано	
+| Наименование поля | Формат | Описание	| Пример |
+| --------- | ---------- | ------------------------- | ------ |
+| timestamp	| number | Дата создания сообщения в ms(Unix epoch time) соответствует времени GMT: Friday, 27 July 2018 г., 13:15:41.321 title (optional) | 1532697187321
+| string, UTF8	| Заголовок сообщения
+| creator| 	string, Base58	| Счет создателя сообщения	 
+| header | header |
+| ------ | ------ |
+| cell | cell |
+| cell | cell |publickey	string, Base58	Публичный ключ создателя сообщения	 
+| header | header |
+| ------ | ------ |
+| cell | cell |
+| cell | cell |signature	string, Base58	Цифровая подпись сообщения - далее уникальный идентификатор заказа	 
+| header | header |
+| ------ | ------ |
+| cell | cell |
+| cell | cell |message (optional)	string, UTF8	Содержит данные об заказе	  
+| header | header |
+| ------ | ------ |
+| cell | cell |
+| cell | cell |isText	boolean	true - сообщение в текстовом формате	
+| header | header |
+| ------ | ------ |
+| cell | cell |
+| cell | cell |encrypted	boolean	true - сообщение зашифровано	
 
 Поле message содержит Сообщение с набором полей, описывающих заказ и представляет собой инкапсулированный JSON объект (см. пример ниже):
 
