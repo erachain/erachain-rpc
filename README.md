@@ -1,89 +1,89 @@
-# Erachain-RPC
+# ERACHAIN-RPC
 
 Remote Protocol Control
 
-Инвойсы (заказы). Форматы сообщений для банка
+Invoices (orders). Message formats for bank
 
-### Предпосылки
-1. Все наименования полей передаваемые в JSON структурах чувствительны к регистру
-2. Взаимодействие с нодой осуществляется путем отправки соответствующих запросов через PRC порты. Для серверов тестовой сети - 9068/tcp рабочей сети  - 9048/tcp
-Пример команды получения адреса в кошельке ноды:
-http://89.235.184.251:9068/addresses?password=123456789
+### Prerequisites
+1. All field names passed in JSON structures are case sensitive
+2. Interaction with node is performed by sending appropriate requests through PRC ports. For test network servers - 9068/tcp for work network - 9048/tcp
+An example of a command to get the address in the wallet of a node:
+http://89.235.184.251:9048/addresses?password=123456789
 
-3. Для работы методов отправки телеграмм и транзакций необходимо использовать пароль более 8-ми символов:
+3. For telegram and transaction methods to work, you must use a password of more than 8 characters:
 
-curl -d "123456789" -X POST http://127.0.0.1:9068/wallet/unlock
+curl -d "123456789" -X POST http://127.0.0.1:9048/wallet/unlock
 
-4. Для обозначения передаваемые параметров используются фигурные скобки, например следующий синтаксис
+4. Curly braces are used to indicate passed parameters, e.g. the following syntax
 parameter={parameterValue}
-для parameterValue=643 будет исполнен как 
+for parameterValue=643 will be executed as 
 parameter=643
-1. Получение списка заказов (инвойсов)
-Для поиска заказов на стороне банка, нужно выполнить RPC запрос с указанием счета (address) на который посланы сообщения, даты (timestamp) с которой нужно прочитать сообщения и (опционально) идентификатора пользователя (filter).
-Параметр decrypt=true дает команду расшифровывать сразу зашифрованные сообщения (требует указание параметра password).
-Команда RPC
+1. Obtaining a list of orders (invoices)
+To search for orders at the bank you need to execute an RPC request specifying the account (address) where the messages were sent to, the date (timestamp) from which you want to read the messages and (optionally) the user's identifier (filter).
+Parameter decrypt=true gives a command to decrypt encrypted messages at once (requires the password parameter).
+RPC command
 telegrams/address/{address}/timestamp/{timestamp}?filter={filter}&decrypt={true/false}&password=123456789 
 
-#### Примеры
-Поиск телеграммы с даты 0 и по фильтру идентификатора пользователя 9090001011:  
-http://89.235.184.251:9068/telegrams/timestamp/0?filter=9090001011  
+#### Examples
+Search for telegrams from date 0 and by filtering user ID 9090001011:  
+http://89.235.184.251:9048/telegrams/timestamp/0?filter=9090001011  
 
-Поиск телеграммы по адресу получателя 7Dpv5... и фильтру идентификатора пользователя 9090001011:  
-http://89.235.184.251:9068/telegrams/address/7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob?filter=9090001011
+Search for a telegram by recipient address 7Dpv5... and user ID filter 909000101011:  
+http://89.235.184.251:9048/telegrams/address/7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob?filter=9090001011
 
-Поиск телеграммы по сигнатуре 5CmLD...  
-http://89.235.184.251:9068/telegrams/get/5CmLDgMuk8MLU2nf2BYxu93bBFmxzE5cFrqqe1avw5m8WdYbPjVAv1HRR5HziZVdpSGCNUhnLaUARe2Qoiixc4XB
+Telegram Search by Signature 5CmLD...  
+http://89.235.184.251:9048/telegrams/get/5CmLDgMuk8MLU2nf2BYxu93bBFmxzE5cFrqqe1avw5m8WdYbPjVAv1HRR5HziZVdpSGCNUhnLaUARe2Qoiixc4XB
 
-Поиск телеграммы по адресу 79MXsj... с даты 0 по фильтру идентификатора пользователя 909000111:  
-http://89.235.184.251:9068/telegrams/address/79MXsjo9DEaxzu6kSvJUauLhmQrB4WogsH/timestamp/0?filter=9090001011
+Search for a telegram by address 79MXsj... from date 0 by user ID filter 909000111:  
+http://89.235.184.251:9048/telegrams/address/79MXsjo9DEaxzu6kSvJUauLhmQrB4WogsH/timestamp/0?filter=9090001011
 
-Формат Ответа  
-Ответ выдается в виде списка объектов JSON, где каждый элемент списка есть JSON объект c единственным полем transaction и соответствующим ему вложенным объектом JSON имеющим следующим набор полей:  
+Answer format.  
+The response is returned as a list of JSON objects, where each item is a JSON object with a single field transaction and the corresponding JSON object with the following set of fields:  
 
 
-Таблица 1. Представление полей транзакции  
+Table 1. Presentation of the transaction fields  
 
-| Наименование поля | Формат | Описание	| Пример |
+| Field name | Format | Description | Example |
 | ----------------- | ------ | -------- | ------ |
-| timestamp	| number | Дата создания сообщения в ms(Unix epoch time) соответствует времени GMT: Friday, 27 July 2018 г., 13:15:41.321  | 1532697187321 |
-| title (optional) | string, UTF8 | Заголовок сообщения | |
-| creator| 	string, Base58	| Счет создателя сообщения	 | |
-| publickey | string, Base58 | Публичный ключ создателя сообщения | |
-| signature | string, Base58 | Цифровая подпись сообщения - далее уникальный идентификатор заказа |  |
-| message (optional) | string, UTF8 | Содержит данные об заказе |  |
-| isText | boolean | true - сообщение в текстовом формате |  |	
-| encrypted | boolean | true - сообщение зашифровано |  |
+| timestamp | number | message creation date in ms(Unix epoch time) corresponds to GMT time: Friday, 27 July 2018, 13:15:41.321 | 1532697187321 |
+| title (optional) | string, UTF8 | message title |
+| creator| string, Base58 | message creator account |
+| publickey | string, Base58 | public key of the message creator |
+| signature | string, Base58 | message digital signature - further unique order identifier | |
+| message (optional) | string, UTF8 | contains data about the order |
+| isText | boolean | true - message in text format |	
+| encrypted | boolean | true - the message is encrypted |
 
-Поле message содержит Сообщение с набором полей, описывающих заказ и представляет собой инкапсулированный JSON объект (см. пример ниже):
+The message field contains a message with a set of fields describing the order and is an encapsulated JSON object (see the example below):
 
-Таблица 2. Представление полей Сообщения 
+Table 2. Message field representation 
 
-| Наименование поля | Формат | Описание	| Пример |
+| Field name | Format | Description | Example |
 | ----------------- | ------ | -------- | ------ |
-| date | number | Дата создания заказа  соответствует времени GMT: Friday, 27 July 2018 г., 13:15:41.321 | 1532697187321 |
-| order | string | ID заказа | DF-12/q |
-| user | string | ID покупателя - номер телефона и/или e-mail и/или счет в блокчейн. Если указывается несколько идентификаторов, то они разделяются пробелом 7DshTw6... | 916241345 |
-| curr | number | Код валюты к оплате (ISO) | 643 |
-| sum (optional) | number | Сумма к оплате. Если параметр не задан, то можно делать любую оплату, например пополнение депозита в магазине | 10354.34 |
-| expire (optional) | number | Срок действия заказа в минутах от даты создания заказа (параметр date). Если не задан то устанавливается в 60 минут. | 60 |
-| title (optional) | string, UTF8 | Заголовок сообщения. В нем указывается краткая информация, которую банк будет посылать клиенту в качестве пуш уведомления например.	"оплата покупки в Озон" |  |
-| description (optional) | string, UTF8 | Описание заказа, включая указание об сумме НДС (или без НДС). Это поле будет подтавляться банком в "Назначение платежа" | "Без НДС" |
-| details (optional) | string, UTF8 | Список платежных реквизитов магазина (будет использоваться в дальнейшем) | "КБК 190198198981б БИК 1298371398 СЧЕТ 10293809183" |
-| callback (optional) | string | Callback url - ссылка на обратный отклик магазина | https://my_shop/simplechain/callback?order= |
+| date | number Date of order creation corresponds to GMT time: Friday, 27 July 2018, 13:15:41.321 | 1532697187321 |
+| order | string | order ID | DF-12/q |
+| user | string | buyer ID - phone number and/or e-mail and/or blockchain account. If several identifiers are specified, they are separated by a space 7DshTw6... | 916241345 |
+| curr | number | currency code payable (ISO) | 643 |
+| sum (optional) | number | amount payable. If the parameter is not set, you can make any payment, for example a deposit to the store | 10354.34 |
+| The period of validity of the order in minutes from the date of creation of the order (parameter date). If not specified it is set in 60 minutes. | 60 |
+| title (optional) | string, UTF8 | message title. It contains the brief information that the bank will send to the client as a push notification e.g.	"payment for the purchase in Ozone" | |
+| description (optional) | string, UTF8 | description of the order including indication of the VAT amount (or without VAT). This field will be substituted by the bank in "Purpose of payment" | "Without VAT" |
+| Payment details (optional) | string, UTF8 | list of payment details of the store (will be further used) | "KBC 190198198981b BIK 1298371398 ACCOUNT 10293809183" |
+| callback (optional) | string | callback url - link to the store's callback | https://my_shop/simplechain/callback?order= |
 
-**Примеры ответов на запросы**  
-Запрос от iDБанк (поиск телеграммы по адресу получателя, времени и идентификатору пользователя):  
-http://127.0.0.1:9068/telegrams/address/7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob/timestamp/1526981437793?filter={номер телефона}
+**Examples of query responses**  
+Query from iDBank (search for a telegram by recipient address, time and user ID):  
+http://127.0.0.1:9048/telegrams/address/7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob/timestamp/1526981437793?filter={phone number}
 
-Ответ:  
+Response:  
 ```
 {
-"transaction":
-  {            "type_name": "SEND", 
-      "creator": "7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob", 
-      "message": "{\"date\":1526981249588,\"order\":\"HSA-1234\",\"user\":\”79101230110\”,\"curr\":643,\"sum\":100.5,\"expire\":300,\"title\":\"Покупка в Магазине\",\"details\":\”BIK:40800123000120800034 IBAN:40800123000120800033\”,\"description\":\"Без НДС"}",            "signature": "5mHi6cFKbN36U3FaPydTE2GwXhD6ZGqNvJRcBCT455MpK6TLr2Wkyf1mV51DLzu93RGZikJowZV9fPauAB6ko8Y6",            "title": "9101230110",
+{ "transaction":
+  { "type_name": "SEND", 
+      { "creator": "7Dpv5Gi8HjCBgtDN1PniuPJQCBQ5H8Zob", 
+      "message": "{\"date\":1526981249588,\"order\":\"HSA-1234\",\"user\":\”79101230110\”,\"curr\":643,\"sum\":100. 5,\"expire\":300,\"title\":\"Order at store\",\"details\":\”BIK:40800123000120800034 IBAN:40800123000120800033\”,\"description\": \{"no VAT"}", "signature": "5mHi6cFKbN36U3FaPydTE2GwXhD6ZGqNvJRcBCT455MpK6Tr2Wkyf1mV51DLzu93RGZikJowZV9fPauAB6ko8Y6", "title": "9101230110",
       "encrypted": false, 
-      "recipient": "7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob",
+      { "recipient": "7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob",
       "isText": true,
       "timestamp": 1526981249588,
     ... }
@@ -92,75 +92,74 @@ http://127.0.0.1:9068/telegrams/address/7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob/times
 
 ```
 { 
-    "transaction": {
+    }, { "transaction": {
             "type_name": "SEND", 
-            "creator": "7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob", 
-            "message": "{\"date\":1526981337793,\"order\":\"order123\",\"user\":\”127\”,\"curr\":2,\"sum\":10.1,\"expire\":153,\"title\":\"Заказ в магазине Ламода\",\"paymentDetails\":\"--\" ,\"description\":\"НДС не включает\"}",            "signature": "2dn6iiRuvNDeeLT61rXT7nw56ZThNwH5ndGbRmjT6UYJWa4wT7iXHDFWnp8dSSrNmBBK13b2dRv2VRjJQmGwrTBt",            "title": "127",            "encrypted": false, 
-            "recipient": "7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob",
+            { "creator": "7Dpv5Gi8HjCBgtDN1PniuPJQCBQ5H8Zob", 
+            "message": "{\"date\":1526981337793,\"order\":\"order123\",\"user\":\”127\”,\"curr\":2,\"sum\":10.1,\"expire\":153,\"title\":\"Order at Lamoda\",\"paymentDetails\":\"--\" ,{"description\":\"VAT not included\"}", "signature": "2dn6iiRuvNDeeLT61rXT7nw56ZThNwH5ndGbRmjT6UYJWa4wT7iXHDFWnp8dSSrNmBBK13b2dRv2VRjJQmGwrTBt", "title": "127", "encrypted": false, 
+            { "recipient": "7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob",
             "isText": true,
             "timestamp": 1526981337793,
             ...        }
     }
 ```
 
-### 2. Отправка сообщения в магазин
-Формат уведомления об оплате  
-Сообщение оператора производится путем создания транзакции в блокчейне, в поле message которой указана вся необходимая информация в формате JSON. Данные могут быть зашифрованы
+### 2. Sending a message to the store
+Payment notification format  
+The operator's message is produced by creating a transaction in the blockchain with all the necessary information in JSON format in the message field. Data can be encrypted
 
-Таблица 3. Представление Уведомления об оплате инвойса
+Table 3: Invoice payment notification representation
 
-Наименование	Формат	Описание
+Name Format Description
 orderSignature
-	string	Подпись оплаченного (ранее посланного) инвойса в кодировке Base58, 64 байта
-curr	number	Код валюты к оплате (ISO). Например для публя 643, для доллара 840
-sum(optional)	number	Если оплаченная сумма не совпадает с суммой инвойса, то оплата частичная (возможно доплата придет с другого банка или будет произведена наличными курьеру при доставке или покрыта бонусными баллами). 
-Если сумма инвойса не была задана — то данная сумма указывает на сколько было произведено пополнение дебета в магазине. Сумма заказа может не задаваться если магазин принимает неограниченное количество денег на личный счет пользователя без конкретизации каждой покупки. 
-callback (optional)	string	Callback url - ссылка на обратный отклик банка или оператора, например для быстрой связи в следующий раз
+	string Signature of the paid (earlier sent) invoice in Base58 encoding, 64 bytes
+curr number Code of the currency to be paid (ISO). E.g. for GBP 643, for USD 840
+Sum(optional) number If the amount paid is not the same as the invoice amount then the payment is partial (the surcharge may come from another bank or it may be paid in cash to the courier upon delivery or covered by bonus points). 
+If the invoice amount hasn't been set, the amount indicates how much of the debit has been credited to the store. The order amount may not be specified if the store accepts an unlimited amount of money to the user's personal account without specifying each purchase. 
+callback (optional) string Callback url - a link to the bank's or operator's callback, e.g. for the fast connection next time
  
 
-Банк передает сообщение в магазин, посылая транзакцию в блокчейн с использованием метода RPC r_send.
-Форматы команд передачи сообщения с записью в блокчейн:
+The bank sends a message to the store by sending a transaction to the blockchain using the RPC r_send method.
+Formats for message transfer commands with a write to the blockchain:
 
-**Метод GET**  
+**GET method**.  
 r_send/{creator}/{recipient}?title={title}&message={message}&encoding={encoding}&encrypt=true&password={password}
 
-creator - cчет-отправитель,  отправляет сообщение или средства, посылая транзакцию в  блокчейн, с этого счета списывается комиссия за осуществление транзакции. Счет  должен существовать в кошельке  ноды,  на которой исполняется команда.
-recipient - cчет-получатель, получает сообщение или средства.
-title - заголовок сообщения в кодировке UTF8, длина при преобразовании в массив байт,  не должна превышать 256 байт.
-encoding - база кодировки сообщения (number), по умолчанию = 0, используется  кодировка UTF8.  Допустимые значения: 0, 16, 58, 64. Например, значение 58  указывает на кодировку Base58.
-message - сообщение в кодировке UTF8 или в кодировке, задаваемой параметром  encoding.
-encrypt - приказ зашифровать сообщение, по умолчанию - false.
-password - пароль доступа к кошельку.
-Замечания к команде r_send
-Если счет создателя транзакции не удостоверен и задан заголовок (title) и сообщение (message) не зашифровано, то такая транзакция будет признана некорректной и отвергнута нодой. Для того чтобы этого не происходило, необходимо удостоверить счет с которого создается транзакция, либо зашифровать сообщение и не задавать заголовок сообщения. Допустимо задать сообщение с кодировкой в цифровом виде, используя параметр encoding. Пересылка сообщения в цифровом виде уменьшает размер транзакции и снижает ее стоимость. Если происходит пересылка расчетных активов (имеющих стоимость для третьих лиц) с удостоверенного счета на анонимный, например с номером актива более 1000, то транзакция также будет отвергнута.
+creator - creator account, sends a message or funds by sending a transaction to the blockchain, this account is debited with the transaction fee. The account must exist in the wallet of the node on which the command is executed.
+recipient - the recipient account, receives the message or funds.
+title - message header in UTF8 encoding, length should not exceed 256 bytes when converting into an array of bytes.
+encoding - message encoding base (number), default = 0, UTF8 encoding is used.  Valid values: 0, 16, 58, 64. For example value 58 indicates Base58 encoding.
+message - message in UTF8 encoding or in encoding defined by encoding parameter.
+encrypt - encrypt message, by default - false.
+password - password to access the wallet.
+Notes to r_send command
+If the account of transaction's creator is not authenticated and the title and message are not encrypted, then such transaction will be recognized as incorrect and rejected by the node. To avoid this, it is necessary to verify the account from which the transaction is created, or encrypt the message and not to set the message title. It is acceptable to set the message encoded digitally using the encoding parameter. Sending a message digitally reduces the size of the transaction and lowers its cost. If there is a transfer of settlement assets (having value to third parties) from a certified account to an anonymous account, for example with an asset number greater than 1000, the transaction will also be rejected.
 
-Пример
-http://89.235.184.251:9068/r_send/7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob/79MXsjo9DEaxzu6kSvJUauLhmQrB4WogsH?message={"orderSignature":"4Jyw8hqDHr4H7RuKhhjJkKZRhTZ8D2w1ggKTuEPTmmJyKbRf81HDYhWkdmjseQsgnXCBmBarz16FeyLA5c1M13tn","sum":"1598.0000"}&password=123456789
+Example
+http://89.235.184.251:9048/r_send/7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob/79MXsjo9DEaxzu6kSvJUauLhmQrB4WogsH?message={"orderSignature":"4Jyw8hqDHr4H7RuKhjJkKZRhTZ8D2w1ggKTuEPTmmJyKbRf81HDYhWkdmjseQsgnXCBmBarz16FeyLA5c1M13tn","sum":"1598.0000"}&password=123456789
 
-
-Метод POSTВ теле запроса необходимо сформировать объект JSON указав в нем все необходимые поля:
+POST methodIn the body of the request you need to form a JSON object specifying all the necessary fields in it:
 ```
 {
-"creator":"7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob",  "recipient":"79MXsjo9DEaxzu6kSvJUauLhmQrB4WogsH",
-“title”:”...”,
-“message”:”...”,
-"encoding ":0,
+"creator":"7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob","recipient":"79MXsjo9DEaxzu6kSvJUauLhmQrB4WogsH",
+"title":",
+"message":",
+"encoding":0,
 "encrypt":false,
 "password":"123456789"
 }
 ```
 
 
-В поле message необходимо передать Уведомление об оплате для магазина в виде объекта JSON, см. таблицу 3
+In the message field you must pass Notification of payment for the store as a JSON object, see table 3
 
-Пример:
-"message":"{\"orderSignature\":\"3oBXNhN5ihNMFSYgWVKQPYXoqjJNFmsvWdMCTEFeBBRuu9bcVBHrtvmcLMX1BZMJHUiTJYupEecvuvDckotQ8QLS\",\"sum\":10000.55,\"curr\":643}",
+Example:
+"message":"{\"orderSignature\":\"3oBXNhNh5ihNMFSYYgWVKQPYXoqjJNFmsvWdMCTEFeBBRu9bcVBHrtvmcLMX1BZMJHUiTJYupEecvuvDckotQ8QLS\",\"sum\":10000.55,\"curr\":643}"
 
-Пример команды с методом POST:
+Example command with POST method:
 ```
-{"creator":"7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob","recipient":"79MXsjo9DEaxzu6kSvJUauLhmQrB4WogsH",
-“message”:”...”,
-"encoding ":0,
+{"creator": "7Dpv5Gi8HjCBgtDN1PniuPJQCBQ5H8Zob", "recipient": "79MXsjo9DEaxzu6kSvJUauLhmQrB4WogsH",
+"message":",
+"encoding":0,
 "encrypt":false,
 "password":"123456789"
 }
@@ -168,127 +167,127 @@ http://89.235.184.251:9068/r_send/7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob/79MXsjo9DEa
 
 
 
-Примечание: экранирование двойных кавычек обратной наклонной чертой внутри строки поля message необходимо в случае, если в используемом языке программирования строка обозначается двойными кавычками (Java, C, C++ и т.п.)
+Note: escaping double quotes with a backslash inside the message field string is necessary if your programming language uses double quotes (Java, C, C++, etc.).
 
-Замечание по проверке внесения транзакций в блокчейн.
-Так как полной уверенности что транзакция будет внесена в блокчейн нет (именно поэтому у транзакций есть разное состояние - неподтвержденная и подтвержденная), то после того как транзакция послана в блокчейн, необходимо ее сохранить в локальной таблице. Затем организовать проверку транзакций по этой таблице - внесена ли транзакция в блокчейн И если внесена, то удаляем ее из таблицы. Иначе шлем еще раз. Период просмотра транзакций должен быть равен, по крайней мере, двум длительностям блока (например 600 секунд).
-Проверка подтверждения (внесения) транзакции в блокчейн:
+Note about checking if transactions are entered into the blockchain.
+As it's not absolutely sure that transaction will be put in the blockchain (that's why transactions have different states - unconfirmed and confirmed), then after transaction is sent in the blockchain, it must be saved in a local table. Then organize transaction check against this table - whether transaction is entered into the blockchain And if it is entered, then delete it from the table. Otherwise send it again. Period of review of transactions must be equal to at least two duration of the block (eg 600 seconds).
+Check if the transaction is validated (added) to the blockchain:
 GET transactions/signature/[signature]
-где signature - подпись транзакции в кодировке Base58.
-В ответ будет выдана информация от транзакции и если она включена в блокчейн, то в поле confirmations будет выдано значение подтверждений - если оно больше 0, то транзакция включена в блокчейн
+where signature is the signature of the transaction in Base58 encoding.
+The response will return information from the transaction and if it is included in the blockchain, then the confirmations field will show the confirmation value - if it is greater than 0, then the transaction is included in the blockchain
 
-Другие команды для транзакций
+Other commands for transactions
 
-Проверка неподтвержденных транзакцийtransactions/network
+Verify unconfirmed transactions
 
-Например:
-http://89.235.184.251:9068/transactions/network
+For example:
+http://89.235.184.251:9048/transactions/network
 
-Замечания по использованию параметра callback (03.сентября)
-После подтверждения оплаты заказа и передачи сообщения (банком) в блокчейн о совершенной оплате, банк может использовать данный параметр (callback) для уведомления магазина об оплате и для перенаправления пользователя на его сайт. При этом параметром в команде должна быть задана подпись от транзакции, которую банк послал в блокчейн с сообщением об оплате.
+Notes on using the callback parameter
+After confirming the payment for the order and sending a message (by the bank) to the blockchain about the payment made, the bank may use this parameter (callback) to notify the store about the payment and to redirect the user to its site. In this case, the parameter in the command must be a signature from the transaction that the bank sent to the blockchain with the payment message.
 
-Callback как вариант уведомления магазина
-Если обратиться по URL заданному в параметре callback с добавлением подписи от транзакции в которой банк послал сообщение об оплате, то на стороне магазина будет запущена проверка на поиск этой транзакции в блокчейн и обработку сообщения из нее. В этом случае банку достаточно получить код ответа 200 - что магазин был уведомлен.
+Callback as store notification option
+If you set a URL specified in the callback parameter and add a signature from a transaction in which the bank has sent the payment message, the store will run a check to find that transaction in the blockchain and process the message from it. In this case the bank only needs to get a response code 200 - that the store has been notified.
 
-Пример callback ссылок:  
+Example callback links:  
 https://my_shop/simplechain/callback/  
 https://my_shop/simplechain/callback?signature=  
 
-Банк должен добавить подпись своей транзакции в которой, и вызвать эту ссылку, например так:  
-https://my_shop/simplechain/callback/R56aSdwto9i123dhg….  
-https://my_shop/simplechain/callback?signature=R56aSdwto9i123dhg….  
+The bank has to add a signature of its transaction in which, and call this link, for example like this:  
+https://my_shop/simplechain/callback/R56aSdwto9i123dhg....  
+https://my_shop/simplechain/callback?signature=R56aSdwto9i123dhg....  
 
-Callback как вариант перенаправления клиента на сайт магазина  
-Как правило, после произведения оплаты и уведомления магазина об этом, на стороне банка в личном кабинете плательщика высвечивают кнопку "Перейти обратно в магазин" - для того чтобы пользователя перенаправить на сайт магазина. В этом случае необходимо к ссылке на кнопке добавить параметр source=user, например так:  
-https://my_shop/simplechain/callback/R56aSdwto9i123dhg….?source=user  
-https://my_shop/simplechain/callback?signature=R56aSdwto9i123dhg….&source=user  
+Callback as an option to redirect the client to the site of the store  
+As a rule, after the payment is made and the store is notified about it, the "Go back to the store" button is displayed in the payer's personal account to redirect the user to the store's site. In this case you need to add the parameter source=user to the link on the button, for example like this:  
+https://my_shop/simplechain/callback/R56aSdwto9i123dhg....?source=user  
+https://my_shop/simplechain/callback?signature=R56aSdwto9i123dhg....&source=user  
 
-Магазин, получив запрос по такому URL, запускает проверку на изменения статуса заказа и перенаправляет клиента  на страницу этого заказа, где отражает состояние проверки, например "Проверка оплаты”, "Оплачен", "Отказан" и пр.  
-### 3. Удаление телеграмм с ноды
-3.1 Удаление самостоятельное по приходу весточки от другого банка  
-Банк может самостоятельно мониторить приход весточек на заданные счета магазинов в которых указаны данные об оплате. И если подпись заказа совпадает со списком заказов на стороне банка, то банк может поставить в этот заказ галочку Оплачено или сумму Оплаты. Таким образом при заходе клиента в кабинет, он будет видеть оплаченные счета даже если они оплачены им в другом банке - что так же очень удобно. Или будет видеть "Частично Оплачен" и Остаток сколько еще нужно оплатить данный счет.  
-Так же если распознавать счета банков то можно даже видеть список в каких банках какие суммы оплачены.  
-Однако нужно проверять доверенные счета банков - только с них принимать сообщения об оплате. Список доверенных счетов может поставлять поставивших услуги "Безопасный платеж" или его можно получить потом самостоятельно по списку балансов счетов для заданного токена с правами доверия.  
+Upon receiving a request at this URL, the store will check for changes in the order status and redirect the client to a page of this order where the status of check is reflected; e.g., "Checking payment", "Paid", "Cancelled", etc.  
+### 3. Deletion of telegrams from a node
+3.1 Deletion by itself on arrival of the message from another bank  
+Bank can independently monitor coming of newsletters to specified accounts of stores where payment data are specified. And if the signature of the order coincides with a list of orders on the bank side, the bank may put a tick in that order Paid or the amount Paid. Thus, when the client enters the cabinet, he will see the bills paid even if they are paid by him in another bank - which is also very convenient. Or will see "Partially Paid" and the balance of how much more need to pay this bill.  
+Also if you recognize bank accounts you can even see a list of which banks what amounts are paid.  
+However, it is necessary to check the trusted bank accounts - only from them to receive messages about the payment. The list of trusted accounts can be supplied by the service provider "Secure payment" or you can get it by yourself from the list of account balances for a given token with trust rights.  
 
-3.2 Принудительное удаление с помощью команды  
-Команда:  
+3.2 Forced deletion with a command  
+Command:  
 telegrams/delete  
 
-Команда может быть выполнена только с помощью метода POST.   
-В качестве параметра задается объект JSON c массивом подписей удаляемых телеграмм.  
+Command can be executed only by POST method.   
+It takes a JSON object with an array of telegram signatures to be deleted as a parameter.  
 
-Пример команды удаления методом POST:  
-curl -d "{\"list\": [\"5HUqfaaY2uFgdmDM7XNky31rkdcUCPTzhHXeanBviSvyDfhgYnH4a64Aje3L53Jxmyb3CcouRiBeUF4HZNc7yySy\"]}" -X POST http://127.0.0.1:9068/telegrams/delete  
+Here is an example of POST command:  
+curl -d "{\"list\": [\"5HUqfaaY2uFgdmDM7XNky31rkdcUCPTzhHXeanBviSvyDfhgYnH4a64Aje3L53Jxmyb3CouRiBeUF4HZNc7yySy\"]}" -X POST http://127.0.0.1:9048/telegrams/delete  
 
-В ответе приходит JSON массив не удаленных телеграмм, например, были удалены другой нодой.  
-Пример ответа:  
-["5HUqfaaY2uFgdmDM7XNky31rkdcUCPTzhHXeanBviSvyDfhgYnH4a64Aje3L53Jxmyb3CcouRiBeUF4HZNc7yySy",...]  
+In the response comes JSON an array of telegrams not deleted, e.g. were deleted by another node.  
+Example response:  
+["5HUqfaaY2uFgdmDM7XNky31rkdcUCPTzhHXeanBviSviSvyDfhgYnH4a64Aje3L53Jxmyb3CcouRiBeUF4HZNc7yySy",...]  
 
-Удаление до заданного времени  
+Deleting before a given time  
 GET deleteTelegramToTimestamp/{timestamp}?address=[address]&filter=[filter]  
-timestamp - по время, address - счет получателя, filter - выборка по заголовку  
+timestamp - time, address - recipient account, filter - header sampling  
 
-Удаление для заданного получателя  
-GET deleteTelegramForRecipient/{recipent}?timestamp=[timestamp]&filter=[filter]  
-timestamp - по время, address - счет получателя, filter - выборка по заголовку  
+Deletion for a given recipient  
+GET deleteTelegramForRecipient/{recipient}?timestamp=[timestamp]&filter=[filter]  
+timestamp - time, address - recipient's account, filter - header sampling  
 
-## Приложения
-### Приложение А. Полный список полей описания телеграммы (получение данных о телеграмме)
+### Appendices
+### Appendix A. Full list of telegram description fields (getting telegram data)
 
 ```
             "type_name": "SEND",
-            "creator": "7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob",
+            "creator": "7Dpv5Gi8HjCBgtDN1PniuPJQCBQ5H8Zob",
             "message": "{\"date\":1526981249588,\"order\":\"\",\"user\":\"126\",\"curr\":2,\"sum\":1,\"expire\":9588,\"title\":\"-\",\"paymentDetails\":null,\"description\":\"-\"}", 
-            "signature": "5mHi6cFKbN36U3FaPydTE2GwXhD6ZGqNvJRcBCT455MpK6TLr2Wkyf1mV51DLzu93RGZikJowZV9fPauAB6ko8Y6", 
+            "signature": "5mHi6cFKbN36U3FaPydTE2GwXhD6ZGqNvJRcBCT455MpK6Tr2Wkyf1mV51DLzu93RGZikJowZV9fPauAB6ko8Y6" 
             "fee": "0.00019584",
             "type": 31, 
             "confirmations": 0,
             "version": 0,
             "record_type": "SEND",
-            "title": "126",
+            { "title": "126",
             "encrypted": false,
-            "recipient": "7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob",
+            { "recipient": "7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob",
             "isText": true,
-            "timestamp": 1526981249588,
+            "timestamp": "1526981249588",
             "height": -1
 ```
 
-Полный формат команды передачи сообщения с записью в блокчейн:  
+Full format of the message transmission command with blockchain entry:  
 r_send/{creator}/{recipient}?feePow={feePow}&assetKey={assetKey}&amount={amount}&title={title}&message={message}&encoding={encoding}&encrypt=true&password={password}  
 
-creator -  счет-отправитель,  отправляет сообщение или средства,  с этого счета     списывается комиссия за осуществление транзакции;  
-recipient - cчет-получатель, получает сообщение или переводимые отправителем  средства;  
-feePow - уровень комиссии (number), допустимые значения 0 ... 6, по умолчанию 0;  
-assetKey  - номер учетной единицы в блокчейн (number), по умолчанию 2 (COMPU). Для  использования бухгалтерских учетных единиц, не являющихся расчетными между  участниками Эрачейн, используются ISO коды валют, например для рублей РФ -  643, для доллара США - 840.   
-При передаче значения кода валюты внутри сообщения транзакции (message)  параметр не используется.  
-amount  - количество передаваемых средств (number), по умолчанию 0.  
-При передаче значения внутри сообщения транзакции (message) параметр не  используется.  
-title - заголовок сообщения в кодировке UTF8, длина при преобразовании в массив байт,  не должна превышать 256 байт.  
-encoding  - база кодировки сообщения (number), по умолчанию = 0, используется  кодировка UTF8.  Допустимые значения: 0, 16, 58, 64. Например, значение 58  указывает на кодировку Base58.  
-message - сообщение в кодировке UTF8 или в кодировке, задаваемой параметром  encoding.  
-encrypt - признак зашифрованного сообщения, по умолчанию - false.  
-password - пароль доступа к кошельку.  
+creator - the sending account, sends the message or funds, this account is debited with the transaction fee;  
+recipient - the receiving account, that receives the message or funds sent by the sender;  
+feePow - commission level (number), allowed values 0 ... 6, by default 0;  
+assetKey - blockchain accounting unit number (number), the default value is 2 (COMPU). To use accounting units that are not settlement units between Erachain participants, ISO currency codes are used, e.g. for Russian rubles - 643, for US dollars - 840.   
+When transmitting a currency code value inside a transaction message, the parameter is not used.  
+amount - amount of transferred funds (number), by default 0.  
+Parameter is not used when transmitting value inside transaction message.  
+title - message header in UTF8 encoding, length should not exceed 256 bytes when converting into byte array.  
+encoding - message encoding base (number), default value is 0, UTF8 encoding is used.  Valid values: 0, 16, 58, 64. For example value 58 indicates Base58 encoding.  
+message - message in UTF8 encoding or in encoding, set by encoding parameter.  
+encrypt - encrypted message sign, by default - false.  
+password - wallet access password.  
 
-## Приложение Б. Создание весточек через RPC
-Команда:  
+## Appendix B. Creating messages via RPC
+Command:  
 telegrams/send   
 
-Пример команды создания весточки методом POST:  
-curl -d {\"sender\":\"7CzxxwH7u9aQtx5iNHskLQjyJvybyKg8rF\",\"recipient\":\"7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob\",\"title\":\"title\",\"message\":\"message\",\"encrypt\":true,\"password\":\"123456789\"} -X POST http://127.0.0.1:9068/telegrams/send   
+An example of a command to create newsletters via POST:  
+curl -d {\"sender\":\"7CzxxwH7u9aQtx5iNHskLQjyJvybyKg8rF\",\"recipient\":\"7Dpv5Gi8HjCBgtDN1P1niuPJCBQ5H8Zob\",\"title\" \"title\",\"message\":\"message\",\"encrypt\":true,\"password\":\"123456789\"} -X POST http://127. 0.0.1:9048/telegrams/send   
 
-В ответе приходит JSON с подписью весточки  
-{""signature"": "2WpN9J7b4VqZhGR8X3mZ4BSMEjR2MqUWB1iKQ4s8txdPwaL3nCWUW5wAPANKiwU9yRsndBxbuG9fuY6sy4kXzK5q"}  
-В качестве значения параметра message указать сообщение от магазина в соответствии с выше описанным форматом. В качестве sender - свой счет с которого шлете сообщениие, recipient - счет получателя, причем этот счет должен быть "известен для блокчейн" - тоесть с него должны были пройти какие-то транзакции или он должен быть в вашем кошельке - тогда система сможет найти соотвествующий ему публичный ключ и зашифровать его. Иначе выдаст ошибку - неизвестный публичный ключ  
+The response comes with JSON with the message signature  
+{"signature": "2WpN9J7b4VqZhGR8X3mZ4BSMEjR2MqUWB1iKQ4s8txdPwaL3nCWUW5wAPANKiwU9yRsndBxbuG9fuY6sy4kXzK5q"}  
+As the value of the message parameter, specify the message from the store according to the above described format. As sender - your account from which you send message, recipient - recipient account, and this account must be "known to blockchain" - i.e. it must have passed some transactions or be in your wallet - then the system can find the corresponding public key and encrypt it. Otherwise it will give error - unknown public key  
 
-## Приложение В. Расшифровка сообщения через телеграммы
-Если в телеграмм сообщение зашифровано то расшифровать его можно командой datadecrypt  
+## Appendix B. Decrypting a message via telegrams
+If you have encrypted the message in your telegram, you can decrypt it with the command datadecrypt  
 datadecrypt/{signature}?password={password}  
-Формат Ответа  
-Строка текста если сообщение текстовое или кодировка Base58 если сообщение байтовое  
-Пример метода GET  
-http://127.0.0.1:9068/telegrams/datadecrypt/GerrwwEJ9Ja8gZnzLrx8zdU53b7jhQjeUfVKoUAp1StCDSFP9wuyyqYSkoUhXNa8ysoTdUuFHvwiCbwarKhhBg5?password=123456789  
-Так же все запросы на поиск телеграмм можно делать с параметром decrypt=true и указывать при это пароль доступа к кошельку, например так:  
-http://127.0.0.1:9068/telegrams/address/7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob/timestamp/1526981437793?filter=791517654423&decrypt=true&passwor  d=123456789
+Answer format  
+Text string if the message is text or Base58 encoding if the message is byte  
+An example of the GET method  
+http://127.0.0.1:9088/telegrams/datadecrypt/GerrwwEJ9Ja8gZnzLrx8zdU53b7jhQjeUfVKoUAp1StCDSFP9wuyyqYSkoUhXNa8ysoTdUuFHvwiCbwarKhhBg5?password=123456789  
+You can also make all telegram search requests with parameter decrypt=true and specify in it password to access the wallet, like this:  
+http://127.0.0.1:9088/telegrams/address/7Dpv5Gi8HjCBgtDN1P1niuPJQCBQ5H8Zob/timestamp/1526981437793?filter=791517654423&decrypt=true&password=123456789
 
 ## Multi Send
 Multi send scrip for send asset for many addresses or persons filtered by some parameters.
@@ -364,6 +363,3 @@ GET r_send/multisend/7LSN788zgesVYwvMhaUbaJ11oRGjWYagNA/1/2?amount=100&title=pro
     RELEASE_PACK = 70;
 
     CALCULATED_TRANSACTION = 100;
-
-
-
